@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 )
 
 // NodeFileGenerator generates control files (pid, port, stop scripts) in the work directory.
@@ -23,6 +24,9 @@ func (g *NodeFileGenerator) Start(port int) error {
 	dir := g.cfg.WorkDir
 	if err := os.MkdirAll(dir, 0755); err != nil {
 		return fmt.Errorf("failed to create work dir %q: %w", dir, err)
+	}
+	if err := g.createCompatJar(dir); err != nil {
+		return fmt.Errorf("failed to create compat jar file: %w", err)
 	}
 	if err := g.createPID(dir); err != nil {
 		return err
@@ -59,6 +63,28 @@ func (g *NodeFileGenerator) createPID(dir string) error {
 	}
 	g.pidFile = pidFilePath
 	return nil
+}
+
+func (g *NodeFileGenerator) createCompatJar(dir string) error {
+	execPath, err := os.Executable()
+	if err != nil || execPath == "" {
+		execPath = os.Args[0]
+	}
+
+	name := filepath.Base(execPath)
+	if ext := filepath.Ext(name); ext != "" {
+		name = strings.TrimSuffix(name, ext)
+	}
+	if name == "" {
+		return fmt.Errorf("empty executable name")
+	}
+
+	jarPath := filepath.Join(dir, name+".jar")
+	f, err := os.OpenFile(jarPath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
+	if err != nil {
+		return err
+	}
+	return f.Close()
 }
 
 func (g *NodeFileGenerator) createPort(dir string, port int) error {
