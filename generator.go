@@ -71,10 +71,7 @@ func (g *NodeFileGenerator) createCompatJar(dir string) error {
 		execPath = os.Args[0]
 	}
 
-	name := filepath.Base(execPath)
-	if ext := filepath.Ext(name); ext != "" {
-		name = strings.TrimSuffix(name, ext)
-	}
+	name := compatJarBaseName(execPath)
 	if name == "" {
 		return fmt.Errorf("empty executable name")
 	}
@@ -85,6 +82,14 @@ func (g *NodeFileGenerator) createCompatJar(dir string) error {
 		return err
 	}
 	return f.Close()
+}
+
+func compatJarBaseName(execPath string) string {
+	name := filepath.Base(execPath)
+	if strings.EqualFold(filepath.Ext(name), ".exe") {
+		return strings.TrimSuffix(name, filepath.Ext(name))
+	}
+	return name
 }
 
 func (g *NodeFileGenerator) createPort(dir string, port int) error {
