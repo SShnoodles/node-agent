@@ -44,6 +44,7 @@ cfg := node.Config{
     WorkDir:        "target",                                      // Control file output directory
     ReportURL:      "http://127.0.0.1:28080/report_beatheart",    // Heartbeat report URL
     ReportErrorURL: "http://127.0.0.1:28080/report_error",        // Error report URL
+    PrintHTTP:      false,                                         // Enable HTTP debug logging with slog
 }
 ```
 

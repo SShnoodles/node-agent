@@ -12,13 +12,17 @@ import (
 
 // AppInfoCollector collects application runtime information.
 type AppInfoCollector struct {
-	port int
-	cfg  Config
+	port      int
+	cfg       Config
+	startTime int64
 }
 
 // NewAppInfoCollector creates a new AppInfoCollector.
 func NewAppInfoCollector(cfg Config) *AppInfoCollector {
-	return &AppInfoCollector{cfg: cfg}
+	return &AppInfoCollector{
+		cfg:       cfg,
+		startTime: time.Now().UnixMilli(),
+	}
 }
 
 // SetPort sets the application listening port used during collection.
@@ -45,7 +49,7 @@ func (c *AppInfoCollector) Collect() (*AppInfo, error) {
 		Jar:       jarInfo.Jar,
 		App:       jarInfo.App,
 		Version:   jarInfo.Version,
-		StartTime: time.Now().UnixMilli(),
+		StartTime: c.startTime,
 	}, nil
 }
 

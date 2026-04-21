@@ -16,6 +16,9 @@ type Config struct {
 	// ReportErrorURL is the error report endpoint.
 	// Default: "http://127.0.0.1:28080/report_error"
 	ReportErrorURL string
+
+	// PrintHTTP controls whether to print HTTP debug information. Default: false.
+	PrintHTTP bool
 }
 
 // DefaultConfig returns a Config with default values.
@@ -25,5 +28,6 @@ func DefaultConfig() Config {
 		WorkDir:        "target",
 		ReportURL:      "http://127.0.0.1:28080/report_beatheart",
 		ReportErrorURL: "http://127.0.0.1:28080/report_error",
+		PrintHTTP:      false,
 	}
 }

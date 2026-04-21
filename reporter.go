@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"log/slog"
 	"net/http"
 	"time"
 )
@@ -26,10 +27,10 @@ func NewAppInfoReporter(cfg Config, collector *AppInfoCollector) *AppInfoReporte
 	}
 }
 
-// StartHeartbeat sends a heartbeat report every second until ctx is cancelled.
+// StartHeartbeat sends a heartbeat report every 3 seconds until ctx is cancelled.
 // It is meant to be run in a goroutine.
 func (r *AppInfoReporter) StartHeartbeat(ctx context.Context) {
-	ticker := time.NewTicker(time.Second)
+	ticker := time.NewTicker(3 * time.Second)
 	defer ticker.Stop()
 
 	for {
@@ -92,14 +93,25 @@ func (r *AppInfoReporter) ReportError(err error) bool {
 func (r *AppInfoReporter) post(url string, body []byte) bool {
 	req, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(body))
 	if err != nil {
+		if r.cfg.PrintHTTP {
+			slog.Error("failed to create HTTP request", "url", url, "error", err)
+		}
 		return false
 	}
 	req.Header.Set("Content-Type", "application/json;charset=UTF-8")
 
+	if r.cfg.PrintHTTP {
+		slog.Info("sending HTTP request", "method", http.MethodPost, "url", url, "body", string(body))
+	}
+
 	resp, err := r.client.Do(req)
 	if err != nil {
+		if r.cfg.PrintHTTP {
+			slog.Error("HTTP request failed", "url", url, "error", err)
+		}
 		return false
 	}
+
 	resp.Body.Close()
 	return true
 }
